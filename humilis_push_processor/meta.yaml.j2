@@ -25,10 +25,12 @@ meta:
                 A list of Python dependencies for the Lambda function
             value: []
 
-        input:
+        sources:
             description:
-                The Arn of the input event source
+                The AWS services that may push events to the Lambda
             value:
+                - sns
+                - s3
 
         # Settings for the error Kinesis stream
         {% if error %}

@@ -32,6 +32,8 @@ humilis-push-processor:
             filter: mypkg:error_filter
             mapper: mypkg:error_mapper
             partition_key: False
+          sources:
+            - s3
           input:
             filter: mypkg:input_filter
             mapper: mypkg:input_mapper
@@ -51,7 +53,7 @@ humilis-push-processor:
             ref:
                 parser: layer_output
                 parameters:
-                    layer_name: push-processor
+                    layer_name: processor
                     output_name: LambdaFunctionArn
 
         # Keeps secrets: the Sentry token

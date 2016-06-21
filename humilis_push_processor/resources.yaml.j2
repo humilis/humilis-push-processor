@@ -19,6 +19,23 @@
 {% set _ = globs.update({'stateful': True}) %}
 {% endif %}
 resources:
+    # Grant access to S3 and SNS to push events to the Lambda
+    {% if "s3" in sources %}
+    LambdaPermissionS3:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        Action: "lambda:InvokeFunction"
+        FunctionName: {Ref: LambdaFunction}
+        Principal: s3.amazonaws.com
+    {% endif %}
+    {% if "sns" in sources %}
+    LambdaPermissionSNS:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        Action: "lambda:InvokeFunction"
+        FunctionName: {Ref: LambdaFunction}
+        Principal: s3.amazonaws.com
+    {% endif %}
     # The lambda function
     LambdaFunction:
       Type: "AWS::Lambda::Function"
