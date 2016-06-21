@@ -1,0 +1,21 @@
+# test requirements
+boto3
+pytest
+pytest-cov
+tox
+mock
+
+# We need humilis for deployment and also for the integration test suite
+-e git+https://github.com/humilis/humilis#egg=humilis
+
+# We need to install the layer in order to deploy it and test it
+-e .
+
+# We also need these layers
+-e git+https://github.com/humilis/humilis-secrets-vault#egg=humilis-secrets-vault
+-e git+https://github.com/humilis/humilis-streams#egg=humilis-streams
+
+werkzeug
+
+# Install non-recommended keyring backends
+keyrings.alt
