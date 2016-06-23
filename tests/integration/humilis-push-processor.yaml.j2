@@ -13,8 +13,6 @@ humilis-push-processor:
                 shard_count: 2
               - name: OutputStream2
                 shard_count: 1
-              - name: ErrorStream
-                shard_count: 1
 
         - layer: processor
           layer_type: push-processor
@@ -27,11 +25,6 @@ humilis-push-processor:
           lambda_dependencies:
             - user-agents
             - mycode/mypkg
-          error:
-            kinesis_stream: {layer: streams, name: ErrorStream}
-            filter: mypkg:error_filter
-            mapper: mypkg:error_mapper
-            partition_key: False
           sources:
             - s3
           input:

@@ -27,7 +27,7 @@ def environment(settings):
     """The test environment: this fixtures creates it and takes care of
     removing it after tests have run."""
     env = Environment(settings.environment_path, stage=settings.stage)
-    env.create()
+    env.create(update=True)
     yield env
     # env.delete()
 
