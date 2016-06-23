@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
-"""Fixtures."""
+"""Global fixtures."""
+
 from __future__ import unicode_literals
-import codecs
 
-from copy import deepcopy
-import json
 from mock import Mock
-import uuid
-
 import pytest
 
 
