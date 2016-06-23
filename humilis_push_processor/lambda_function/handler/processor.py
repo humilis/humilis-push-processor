@@ -24,9 +24,10 @@ def process_event(event, context, environment, layer, stage, input, output):
 
     events = event["Records"]
 
-    input_delivery_stream = input.get("firehose_delivery_stream")
-    if input_delivery_stream:
-        send_to_delivery_stream(events, input_delivery_stream)
+    if input:
+        input_delivery_stream = input.get("firehose_delivery_stream")
+        if input_delivery_stream:
+            send_to_delivery_stream(events, input_delivery_stream)
 
     # Arguments needed to set/get processor state.
     sargs = dict(environment=environment, layer=layer, stage=stage)
