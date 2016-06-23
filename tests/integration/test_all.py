@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tests the input and output Kinesis streams."""
 
 import time

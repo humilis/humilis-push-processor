@@ -77,7 +77,7 @@ resources:
                     - "logs:CreateLogStream"
                     - "logs:PutLogEvents"
                   Resource: "arn:aws:logs:*:*:*"
-                {% if meta_input.firehose_delivery_stream or meta_error.firehose_delivery_stream or globs.has_delivery_stream %}
+                {% if meta_input.firehose_delivery_stream or meta_error.firehose_delivery_stream or globs.has_output_delivery %}
                 - Effect: Allow
                   # Write access to the Firehose delivery stream(s)
                   Action:
@@ -104,15 +104,7 @@ resources:
                     - "kinesis:DescribeStream"
                     - "kinesis:ListStreams"
                   Resource: "*"
-                {% if meta_input.kinesis_stream_arn %}
-                - Effect: Allow
-                  # Permissions to read from the input stream
-                  Action:
-                    - "kinesis:GetRecords"
-                    - "kinesis:GetShardIterator"
-                  Resource: {{ meta_input.kinesis_stream_arn }}
-                  {% endif %}
-                  {% if has_output_stream or meta_error.kinesis_stream_arn %}
+                  {% if globs.has_output_stream or meta_error.kinesis_stream_arn %}
                 - Effect: Allow
                   # Permissions to write to error and output streams
                   Action:
