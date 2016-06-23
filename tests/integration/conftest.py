@@ -91,8 +91,12 @@ def shard_iterators(kinesis, output_stream_name):
 
 
 @pytest.fixture(scope="function")
-def s3keys(bucket_name, s3):
+def s3keys(bucket_name, s3, shard_iterators):
     """Put some objects in the test bucket."""
+
+    # Need to pass the shard_iterator fixture as an argument to make sure that
+    # it's loaded before this fixture: Need to read the position in the stream
+    # before we send any events there.
     bucket = s3.Bucket(bucket_name)
 
     keys = []

@@ -1,5 +1,6 @@
 """Tests the input and output Kinesis streams."""
 
+import json
 import time
 
 
@@ -28,7 +29,9 @@ def test_process_notifications(
         retrieved_recs += get_all_records(kinesis, si, len(s3keys), timeout)
 
     assert len(retrieved_recs) == 2*len(s3keys)
-    retrieved_names = {x["s3"]["name"] for x in retrieved_recs}
+
+    retrieved_evs = [json.loads(x["Data"].decode()) for x in retrieved_recs]
+    retrieved_names = {x["s3"]["object"]["key"] for x in retrieved_evs}
     assert not retrieved_names.difference(s3keys)
     assert all("input_filter" in ev and "input_mapper" in ev
-               for ev in retrieved_recs)
+               for ev in retrieved_evs)
