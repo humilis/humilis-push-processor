@@ -1,21 +1,24 @@
 """Global conftest."""
 import pytest
 from collections import namedtuple
-import os
 import time
+import uuid
 
-import boto3
+from boto3facade.kinesis import Kinesis
+from boto3facade.s3 import S3
 from humilis.environment import Environment
 
 
 @pytest.fixture(scope="session")
 def settings():
     """Global test settings."""
-    Settings = namedtuple('Settings',
-                          'stage environment_path streams_layer_name')
+    Settings = namedtuple(
+        "Settings",
+        "stage environment_path layer_bucket_name streams_layer_name")
     return Settings(
         stage="DEV",
         environment_path="tests/integration/humilis-kinesis-processor.yaml.j2",
+        bucket_layer_name="bucket",
         streams_layer_name="streams")
 
 
@@ -26,12 +29,20 @@ def environment(settings):
     env = Environment(settings.environment_path, stage=settings.stage)
     env.create()
     yield env
-    env.delete()
+    # env.delete()
 
 
 @pytest.fixture(scope="session")
 def output_stream_name(settings, environment):
     """The name of the output Kinesis stream."""
+    layer = [l for l in environment.layers
+             if l.name == settings.bucket_layer_name][0]
+    return layer.outputs.get("BucketName")
+
+
+@pytest.fixture(scope="session")
+def bucket_name(settings, environment):
+    """The name of the test bucket."""
     layer = [l for l in environment.layers
              if l.name == settings.streams_layer_name][0]
     return [(layer.outputs.get("OutputStream1"), 2),
@@ -49,8 +60,13 @@ def input_stream_name(settings, environment):
 @pytest.fixture(scope="session")
 def kinesis():
     """Boto3 kinesis client."""
-    region = os.environ.get("AWS_REGION") or "eu-west-1"
-    return boto3.client("kinesis", region_name=region)
+    return Kinesis().client
+
+
+@pytest.fixture(scope="session")
+def s3():
+    """Boto3 S3 resource."""
+    return S3().resource
 
 
 @pytest.fixture(scope="function")
@@ -72,3 +88,17 @@ def shard_iterators(kinesis, output_stream_name):
             sis.append(si)
 
     return sis
+
+
+@pytest.fixture(scope="function")
+def s3keys(bucket_name, s3):
+    """Put some objects in the test bucket."""
+    bucket = s3.Bucket(bucket_name)
+
+    keys = []
+    for _ in range(5):
+        random_key = str(uuid.uuid4())
+        bucket.put_object(Body=b"hello", Bucket=bucket_name, Key=random_key)
+        keys.append(random_key)
+
+    return keys

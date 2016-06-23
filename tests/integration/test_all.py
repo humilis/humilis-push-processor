@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests the input and output Kinesis streams."""
 
-import json
 import time
-import uuid
 
 
 def get_all_records(client, si, limit, timeout=10):
@@ -21,31 +19,18 @@ def get_all_records(client, si, limit, timeout=10):
     return retrieved_recs
 
 
-def test_io_streams_put_get_record(
-        environment, kinesis, payloads, shard_iterators, events,
-        input_stream_name, output_stream_name):
+def test_get_notifications(
+        environment, s3keys, kinesis, shard_iterators, output_stream_name):
     """Put and read a record from the input stream."""
 
-    # Put some records in the input stream
-    response = kinesis.put_records(
-        StreamName=input_stream_name,
-        Records=[
-            {
-                "Data": payload,
-                "PartitionKey": str(uuid.uuid4())
-            } for payload in payloads])
-
-    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
-
     retrieved_recs = []
-    timeout = min(max(15, 4 * len(payloads)), 150)
+    timeout = min(max(15, 4 * len(s3keys), 150))
     for si in shard_iterators:
-        retrieved_recs += get_all_records(kinesis, si, len(payloads), timeout)
+        retrieved_recs += get_all_records(kinesis, si, len(s3keys), timeout)
 
-    assert len(retrieved_recs) == 2*len(payloads)
-    retrieved_events = [json.loads(x["Data"].decode()) for x in retrieved_recs]
-    retrieved_ids = {x["id"] for x in retrieved_events}
-    put_ids = {json.loads(x)['id'] for x in payloads}
-    assert not retrieved_ids.difference(put_ids)
+    import pdb; pdb.set_trace()
+    assert len(retrieved_recs) == 2*len(s3keys)
+    retrieved_names = {x["s3"]["name"] for x in retrieved_recs}
+    assert not retrieved_names.difference(s3keys)
     assert all("input_filter" in ev and "input_mapper" in ev
-               for ev in retrieved_events)
+               for ev in retrieved_recs)

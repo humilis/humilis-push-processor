@@ -3,7 +3,7 @@ from mock import Mock
 
 import pytest
 
-from humilis_kinesis_processor.lambda_function.handler.processor import process_event  # noqa
+from humilis_push_processor.lambda_function.handler.processor import process_event  # noqa
 
 
 def _identity(ev, state_args=None, **kwargs):
@@ -22,7 +22,6 @@ def _none(ev, state_args=None, **kwargs):
 
 
 _input = {
-    "kinesis_stream": "iks",
     "firehose_delivery_stream": "ifhs",
     "mapper": Mock(side_effect=_identity),
     "filter": Mock(side_effect=_all)}
@@ -44,8 +43,8 @@ _output = [{
 
 
 @pytest.mark.parametrize(
-    "e,l,s,i,os,kputs,fputs", [
-        ["e", "l", "s",
+    "n,e,l,s,i,os,kput,fput", [
+        [1, "e", "l", "s",
             {
                 "kinesis_stream": "iks",
             },
@@ -62,8 +61,8 @@ _output = [{
                     "filter": Mock(side_effect=_none)}
                 ],
             1, 1],
-        ["e", "l", "s", _input, _output, 2, 3],
-        ["e", "l", "s",
+        [2, "e", "l", "s", _input, _output, 2, 3],
+        [10, "e", "l", "s",
             {
                 "kinesis_stream": "iks",
             },
@@ -73,7 +72,7 @@ _output = [{
                 "mapper": Mock(side_effect=_identity),
                 "filter": Mock(side_effect=_all)}],
             1, 1],
-        ["e", "l", "s",
+        [4, "e", "l", "s",
             {
                 "kinesis_stream": "iks",
                 "filter": Mock(side_effect=_none)
@@ -84,30 +83,31 @@ _output = [{
                 "mapper": Mock(side_effect=_identity),
                 "filter": Mock(side_effect=_all)}],
             0, 0],
-        ["e", "l", "s", _input, [], 0, 1],
-        ["e", "l", "s",
+        [3, "e", "l", "s", _input, [], 0, 1],
+        [5, "e", "l", "s",
             {
                 "kinesis_stream": "iks",
             },
             [], 0, 0]
         ])
-def test_process_event(e, l, s, i, os, kputs, fputs, kinesis_event, events,
-                       context, boto3_client, monkeypatch):
+def test_process_event(n, e, l, s, i, os, kput, fput, boto3_client,
+                       monkeypatch):
     """Process events."""
-    process_event(kinesis_event, context, "e", "l", "s", i, os)
+    notification = {"Records": [{} for _ in range(n)]}
+    process_event(notification, None, "e", "l", "s", i, os)
 
-    assert boto3_client("kinesis").put_records.call_count == kputs
-    assert boto3_client("firehose").put_record_batch.call_count == fputs
+    assert boto3_client("kinesis").put_records.call_count == kput
+    assert boto3_client("firehose").put_record_batch.call_count == fput
 
     ifilter = i.get("filter")
     if ifilter:
-        assert ifilter.call_count == len(events)
+        assert ifilter.call_count == n
         # Need to reset the call count because events is a parametrized fixture
         ifilter.reset_mock()
     imapper = i.get("mapper")
     if imapper:
         if ifilter is None or ifilter.side_effect == _all:
-            assert imapper.call_count == len(events)
+            assert imapper.call_count == n
         elif ifilter.side_effect == _none:
             assert imapper.call_count == 0
 
@@ -117,7 +117,7 @@ def test_process_event(e, l, s, i, os, kputs, fputs, kinesis_event, events,
         ofilter = o.get("filter")
         if ofilter:
             if ifilter is None or ifilter == _all:
-                assert ofilter.call_count == len(events)
+                assert ofilter.call_count == n
             ofilter.reset_mock()
 
         omapper = o.get("mapper")
@@ -125,9 +125,9 @@ def test_process_event(e, l, s, i, os, kputs, fputs, kinesis_event, events,
         if (ifilter is None or ifilter.side_effect == _all) and \
                 (ofilter is None or ofilter.side_effect == _all):
             if omapper:
-                assert omapper.call_count == len(events)
+                assert omapper.call_count == n
             if pk:
-                assert pk.call_count == len(events)
+                assert pk.call_count == n
         else:
             if omapper:
                 assert omapper.call_count == 0
