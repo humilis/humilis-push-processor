@@ -14,10 +14,10 @@ def settings():
     """Global test settings."""
     Settings = namedtuple(
         "Settings",
-        "stage environment_path layer_bucket_name streams_layer_name")
+        "stage environment_path bucket_layer_name streams_layer_name")
     return Settings(
-        stage="DEV",
-        environment_path="tests/integration/humilis-kinesis-processor.yaml.j2",
+        stage="TEST",
+        environment_path="tests/integration/humilis-push-processor.yaml.j2",
         bucket_layer_name="bucket",
         streams_layer_name="streams")
 
@@ -33,7 +33,7 @@ def environment(settings):
 
 
 @pytest.fixture(scope="session")
-def output_stream_name(settings, environment):
+def bucket_name(settings, environment):
     """The name of the output Kinesis stream."""
     layer = [l for l in environment.layers
              if l.name == settings.bucket_layer_name][0]
@@ -41,7 +41,7 @@ def output_stream_name(settings, environment):
 
 
 @pytest.fixture(scope="session")
-def bucket_name(settings, environment):
+def output_stream_name(settings, environment):
     """The name of the test bucket."""
     layer = [l for l in environment.layers
              if l.name == settings.streams_layer_name][0]

@@ -19,16 +19,15 @@ def get_all_records(client, si, limit, timeout=10):
     return retrieved_recs
 
 
-def test_get_notifications(
+def test_process_notifications(
         environment, s3keys, kinesis, shard_iterators, output_stream_name):
     """Put and read a record from the input stream."""
 
     retrieved_recs = []
-    timeout = min(max(15, 4 * len(s3keys), 150))
+    timeout = min(max(15, 4 * len(s3keys)), 150)
     for si in shard_iterators:
         retrieved_recs += get_all_records(kinesis, si, len(s3keys), timeout)
 
-    import pdb; pdb.set_trace()
     assert len(retrieved_recs) == 2*len(s3keys)
     retrieved_names = {x["s3"]["name"] for x in retrieved_recs}
     assert not retrieved_names.difference(s3keys)
