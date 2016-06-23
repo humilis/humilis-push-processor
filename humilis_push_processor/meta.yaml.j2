@@ -35,9 +35,9 @@ meta:
         {% if input %}
         meta_input:
             description: Mapping and filtering for the input events
-        value:
-            mapper: "{{input.mapper}}"
-            filter: "{{input.filter}}"
+            value:
+                mapper: "{{input.mapper}}"
+                filter: "{{input.filter}}"
         {% endif %}
 
         # Settings for the error Kinesis stream
