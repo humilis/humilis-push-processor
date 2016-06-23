@@ -29,7 +29,7 @@ def environment(settings):
     env = Environment(settings.environment_path, stage=settings.stage)
     env.create(update=True)
     yield env
-    # env.delete()
+    env.delete()
 
 
 @pytest.fixture(scope="session")

@@ -1,17 +1,17 @@
-Lambda processor for event sources
-===================================
+Lambda processor for push event sources
+=======================================
 
-.. |Build Status| image:: https://travis-ci.org/humilis/humilis-lambda-processor.svg?branch=master
-   :target: https://travis-ci.org/humilis/humilis-lambda-processor
-.. |PyPI| image:: https://img.shields.io/pypi/v/humilis-s3-processor.svg?style=flat
-   :target: https://pypi.python.org/pypi/humilis-s3-processor
+.. |Build Status| image:: https://travis-ci.org/humilis/humilis-push-processor.svg?branch=master
+   :target: https://travis-ci.org/humilis/humilis-push-processor
+.. |PyPI| image:: https://img.shields.io/pypi/v/humilis-push-processor.svg?style=flat
+   :target: https://pypi.python.org/pypi/humilis-push-processor
 
 |Build Status| |PyPI|
 
 A `humilis <https://github.com/humilis/humilis>`__ plugin to deploy a
 `Lambda <https://aws.amazon.com/documentation/lambda/>`__ function that
-processes event notification from any of the `event sources`_ supported by 
-AWS.
+processes event notification from an `event sources`_ that pushes events to
+Lambda (e.g. S3 or SNS, as opposed to Kinesis).
 
 .. _event sources: http://docs.aws.amazon.com/lambda/latest/dg/eventsources.html
 
@@ -21,7 +21,7 @@ Installation
 
 ::
 
-    pip install humilis-lambda-processor
+    pip install humilis-push-processor
 
 Development
 -----------
@@ -88,7 +88,7 @@ monitoring out of the box. To activate it you just need to store your Sentry
 DSN in your local keychain. Using Python's `keyring <https://pypi.python.org/pypi/keyring>`_
 module::
 
-    keyring set humilis-lambda-processor:[STAGE] sentry.dsn [SENTRY_DSN]
+    keyring set humilis-push-processor:[STAGE] sentry.dsn [SENTRY_DSN]
 
 
 Alternatively you can set environment variable ``SENTRY_DSN``
