@@ -1,6 +1,7 @@
 """Global conftest."""
 import pytest
 from collections import namedtuple
+import os
 import time
 import uuid
 
@@ -16,7 +17,7 @@ def settings():
         "Settings",
         "stage environment_path bucket_layer_name streams_layer_name")
     return Settings(
-        stage="TEST",
+        stage=os.environ.get("STAGE", "TEST"),
         environment_path="tests/integration/humilis-push-processor.yaml.j2",
         bucket_layer_name="bucket",
         streams_layer_name="streams")
@@ -29,7 +30,8 @@ def environment(settings):
     env = Environment(settings.environment_path, stage=settings.stage)
     env.create(update=True)
     yield env
-    env.delete()
+    if os.environ.get("DESTROY", "yes").lower() == "yes":
+        env.delete()
 
 
 @pytest.fixture(scope="session")
@@ -90,7 +92,7 @@ def shard_iterators(kinesis, output_stream_name):
     return sis
 
 
-@pytest.fixture(scope="function")
+@pytest.yield_fixture(scope="function")
 def s3keys(bucket_name, s3, shard_iterators):
     """Put some objects in the test bucket."""
 
@@ -105,4 +107,8 @@ def s3keys(bucket_name, s3, shard_iterators):
         bucket.put_object(Body=b"hello", Bucket=bucket_name, Key=random_key)
         keys.append(random_key)
 
-    return keys
+    yield keys
+    objects = [{"Key": k} for k in keys]
+    bucket.delete_objects(Delete={"Objects": objects})
+
+    # Delete the keys so that we can destroy the bucket after tests complete

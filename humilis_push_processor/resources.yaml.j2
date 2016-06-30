@@ -73,9 +73,7 @@ resources:
                 - Effect: Allow
                   # Write access to Cloudwatch logs
                   Action:
-                    - "logs:CreateLogGroup"
-                    - "logs:CreateLogStream"
-                    - "logs:PutLogEvents"
+                    - "logs:*"
                   Resource: "arn:aws:logs:*:*:*"
                 {% if meta_input.firehose_delivery_stream or meta_error.firehose_delivery_stream or globs.has_output_delivery %}
                 - Effect: Allow

@@ -67,17 +67,19 @@ To run the integration test suite:
 
 ::
 
-    make testi
+    make testi STAGE=[STAGE] DESTROY=[yes|no]
 
 
-Note that the command above will deploy the processor to a deployment stage 
-called `TEST`. All deployed resources will be deleted after tests have 
-completed but if you want to make sure that you are not leaving any
-(cost-incurring) infrastructure behind you may want to also run:
+Note that the command above will deploy the processor to the specified
+deployment stage. If a deployment stage is not specified then `TEST` will be
+used. If ``DESTROY`` is set to ``yes`` all deployed resources will be deleted
+after tests have completed (this is also the default behaviour if the
+``DESTROY`` parameter is not provided). You can manually destroy the test
+infrastructure with:
 
 .. code:: bash
 
-    make delete STAGE=TEST
+    make delete STAGE=[STAGE]
 
 
 Deployment secrets
