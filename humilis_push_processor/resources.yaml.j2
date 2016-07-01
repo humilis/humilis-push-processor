@@ -14,9 +14,9 @@
 {% set meta_input = meta_input or {} %}
 # Do we need a DynamoDB table to store state info?
 {% if dynamodb_capacity.read|int or dynamodb_capacity.write|int %}
-{% set _ = globs.update({'stateful': False}) %}
-{% else %}
 {% set _ = globs.update({'stateful': True}) %}
+{% else %}
+{% set _ = globs.update({'stateful': False}) %}
 {% endif %}
 resources:
     # Grant access to S3 and SNS to push events to the Lambda
@@ -155,7 +155,7 @@ resources:
     # We use the same state table across shards. The lambdautils functions
     # set_state and get_state take care of concurrent access to the state table
     # across shards by storing each shard state in a different namespace.
-    {% if stateful %}
+    {% if globs.stateful %}
     StateTable:
       Type: "AWS::DynamoDB::Table"
       Properties:
