@@ -1,5 +1,6 @@
 # test requirements
 boto3
+lambdautils>=0.5.1
 pytest
 pytest-cov
 tox
