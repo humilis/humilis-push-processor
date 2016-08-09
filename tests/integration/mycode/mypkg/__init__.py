@@ -13,6 +13,7 @@ def input_filter(event, context, **kwargs):
 
 def input_mapper(event, context, **kwargs):
     event["input_mapper"] = True
+    return event
 
 
 def output_filter_1(event, context, **kwargs):
@@ -22,10 +23,12 @@ def output_filter_1(event, context, **kwargs):
 
 def output_mapper_1(event, context, **kwargs):
     event["output_mapper_1"] = True
+    return event
 
 
 def output_mapper_2(event, context, **kwargs):
     event["output_mapper_2"] = True
+    return event
 
 
 def error_filter(event, context, **kwargs):
@@ -37,3 +40,4 @@ def error_filter(event, context, **kwargs):
 def error_mapper(event, context, **kwargs):
     print(event)
     event["error_mapper"] = True
+    return event

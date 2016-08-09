@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.5
+-----
+
+- Mappers do not modify input events directly
+
 0.0.4
 -----
 
