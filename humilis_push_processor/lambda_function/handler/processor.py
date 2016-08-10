@@ -6,6 +6,7 @@ import logging
 import json
 
 import lambdautils.utils as utils
+from lambdautils.exception import CriticalError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -30,10 +31,6 @@ def process_event(event, context, environment, layer, stage, input, output):
     if not output:
         output = {}
 
-    input_delivery_stream = input.get("firehose_delivery_stream")
-    if input_delivery_stream:
-        send_to_delivery_stream(events, input_delivery_stream)
-
     # Arguments needed to set/get processor state.
     context = dict(environment=environment, layer=layer, stage=stage,
                    lambda_context=context)
@@ -41,9 +38,14 @@ def process_event(event, context, environment, layer, stage, input, output):
     logger.info("Going to process {} events".format(len(events)))
     logger.info("First event: {}".format(pretty(events[0])))
 
-    events = process_input(input, events, context)
-    if not events:
-        return
+    if input:
+        input_delivery_stream = input.get("firehose_delivery_stream")
+        if input_delivery_stream:
+            send_to_delivery_stream(events, input_delivery_stream)
+
+        events = process_input(input, events, context)
+        if not events:
+            return
 
     oevents = produce_outputs(output, events, context)
 
@@ -91,13 +93,24 @@ def produce_outputs(output, events, context):
 
         omapper = o.get("mapper")
         if omapper:
+            mapped_evs = []
             for ev in oevents[i]:
-                omapper(ev, context)
+                res = omapper(ev, context)
+                if isinstance(res, dict):
+                    # 1-to-1 mapping: for backwards compatibility
+                    mapped_evs.append(res)
+                elif isinstance(res, list):
+                    # 1-to-many mapping
+                    mapped_evs += res
+                else:
+                    raise CriticalError("Mapper must return a list of dicts")
+            oevents[i] = mapped_evs
             logger.info("Mapped {} events".format(len(oevents[i])))
+            if mapped_evs:
+                logger.info("First output event: {}".format(
+                    pretty(oevents[0])))
         else:
             logger.info("No output mapper: doing nothing")
-
-        logger.info("First output event: {}".format(pretty(oevents[0])))
 
     return oevents
 
@@ -117,13 +130,24 @@ def process_input(input, events, context):
 
     if input.get("mapper"):
         logger.info("Mapping input evets")
+        mapped_evs = []
         for ev in events:
-            input["mapper"](ev, context)
+            res = input["mapper"](ev, context)
+            if isinstance(res, dict):
+                # 1-to-1 mapping: for backwards compatibility
+                mapped_evs.append(res)
+            elif isinstance(res, list):
+                # 1-to-many mapping
+                mapped_evs += res
+            else:
+                raise CriticalError("Mapper must return a list of dicts")
+
         logger.info("First mapped input events: {}".format(pretty(events[0])))
     else:
+        mapped_evs = events
         logger.info("No input mapping: processing raw input events")
 
-    return events
+    return mapped_evs
 
 
 def send_to_delivery_stream(events, delivery_stream):

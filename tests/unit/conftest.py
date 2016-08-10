@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from mock import Mock
 import pytest
+import uuid
 
 
 @pytest.fixture
@@ -75,3 +76,25 @@ def global_patch(boto3_client, boto3_resource, monkeypatch):
     """Patch boto3."""
     monkeypatch.setattr("boto3.client", boto3_client)
     monkeypatch.setattr("boto3.resource", boto3_resource)
+
+
+@pytest.fixture(scope="session")
+def context():
+    """A dummy CF context object."""
+    class DummyContext:
+
+        def __init__(self):
+            self.function_name = "dummy_name"
+            self.function_version = 1
+            self.invoked_function_arn = "arn"
+            self.memory_limit_in_mb = 128
+            self.aws_request_id = str(uuid.uuid4())
+            self.log_group_name = "dummy_group"
+            self.log_stream_name = "dummy_stream"
+            self.identity = Mock(return_value=None)
+            self.client_context = Mock(return_value=None)
+
+        def get_remaining_Time_in_millis():
+            return 100
+
+    return DummyContext()
