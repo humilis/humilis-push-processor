@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.6
+-----
+
+- Support for one-to-many mappers
+
 0.0.5
 -----
 
