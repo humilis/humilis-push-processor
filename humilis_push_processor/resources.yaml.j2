@@ -133,10 +133,9 @@ resources:
                     - "dynamodb:GetItem"
                   Resource: "*"
                 - Effect: Allow
-                  # Read access to S3 buckets
+                  # Full access S3 buckets
                   Action:
-                    - "s3:Get*"
-                    - "s3:List*"
+                    - "s3:*"
                   Resource: "*"
                   {% if globs.stateful %}
                 - Effect: Allow
