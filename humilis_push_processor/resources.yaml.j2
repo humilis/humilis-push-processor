@@ -9,9 +9,10 @@
 {% set _ = globs.update({'has_output_delivery': True}) %}
 {% endif %}
 {% endfor %}
-# set meta_input and meta_error to empty dicts if the user has not provided them
+# set meta parameters to empty dicts if the user has not provided them
 {% set meta_error = meta_error or {} %}
 {% set meta_input = meta_input or {} %}
+{% set meta_network = meta_network or {} %}
 # Do we need a DynamoDB table to store state info?
 {% if dynamodb_capacity.read|int or dynamodb_capacity.write|int %}
 {% set _ = globs.update({'stateful': True}) %}
@@ -52,6 +53,33 @@ resources:
           "Fn::GetAtt":
               - LambdaExecutionRole
               - Arn
+{% if meta_network %}
+        VpcConfig:
+          SubnetIds:
+              - "{{meta_network.subnet_id}}"
+          SecurityGroupIds:
+              {% if meta_network.security_group_id %}
+              - "{{meta_network.security_group_id}}"
+              {% else %}
+              - "Fn::GetAtt":
+                - LambdaSecurityGroup
+                - GroupId
+              {% endif %}
+    {% if not meta_network.security_group_id %}
+    # If the security group id is missing while deploying Lambda in a VPC
+    LambdaSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Lambda push-processor security group"
+        SecurityGroupEgress:
+          CidrIp: "0.0.0.0/0"
+          IpProtocol: "-1"
+        Tags:
+          - Key: "Name"
+            Value: "lambda-push-processor"
+        VpcId: "{{meta_network.vpc_id}}"
+    {% endif %}
+{% endif %}
     # The role associated to the Lambda function that processes raw events
     LambdaExecutionRole:
       Type: "AWS::IAM::Role"
@@ -146,7 +174,14 @@ resources:
                     - "Fn::Join":
                       - ""
                       - ["arn:aws:dynamodb:", {"Ref": "AWS::Region"},":", {"Ref": "AWS::AccountId"}, ":", "table/", {"Ref": "StateTable"}]
-                 {% endif %}
+                  {% endif %}
+                - Effect: Allow
+                  # Allow the Lambda to access VPC and create ENI
+                  Action:
+                    - "ec2:CreateNetworkInterface"
+                    - "ec2:DescribeNetworkInterfaces"
+                    - "ec2:DeleteNetworkInterface"
+                  Resource: "*"
     {% if meta_input.kinesis_stream %}
     InputEventSourceMapping:
       Type: "AWS::Lambda::EventSourceMapping"
