@@ -32,6 +32,17 @@ meta:
                 - sns
                 - s3
 
+        {% if network %}
+            {% if network.vpc_id and network.subnet_id %}
+        meta_network:
+            description: Parameters to put the Lambda in a VPC
+            value:
+                vpc_id: "{{network.vpc_id}}"
+                subnet_id: "{{network.subnet_id}}"
+                security_group_id: "{{network.security_group_id}}"
+            {% endif %}
+        {% endif %}
+
         {% if input %}
         meta_input:
             description: Mapping and filtering for the input events
