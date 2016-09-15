@@ -32,6 +32,10 @@ meta:
                 - sns
                 - s3
 
+        sns_topic_name:
+            description: A SNS topic the lambda can use to send notifications
+            value:
+
         {% if network %}
             {% if network.vpc_id and network.subnet_id %}
         meta_network:
