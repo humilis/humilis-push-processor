@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.0.8
+-----
+
+- Support deploying Lambda in a VPC and notifying SNS topic
+
+0.0.7
+-----
+
+- Grant full access to S3
+
 0.0.6
 -----
 
