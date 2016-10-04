@@ -5,6 +5,7 @@
 import logging
 import os
 
+import boto3
 import lambdautils.utils as utils
 import raven
 from werkzeug.utils import import_string  # noqa
@@ -104,6 +105,19 @@ error = {
             raise
 
 
+def _notify_sns():
+    """When an error occurs on an output pipeline notify sns."""
+    if "{{sns_topic_arn}}" == "None":
+        raise utils.CriticalError("No SNS Topic name provided, layer "
+                        "push-processor needs one to report the errors.")
+    else:
+        sns = boto3.client("sns")
+        sns.publish(TopicArn="{{sns_topic_arn}}",
+                    Message="Push processor '{{_layer.name}}' from env"
+                    " '{{_env.name}}', stage '{{_env.stage}}' failed, "
+                    "check AWS CloudWatch logs.")
+
+
 @utils.sentry_monitor(
     environment="{{_env.name}}",
     stage="{{_env.stage}}",
@@ -111,15 +125,15 @@ error = {
     error_stream=produce_error_stream_callables())
 def lambda_handler(event, context):
     """Lambda function."""
-
     try:
         input, output = produce_io_stream_callables()
+        return process_event(
+            event, context, "{{_env.name}}", "{{_layer.name}}",
+            "{{_env.stage}}", input=input, output=output)
     except Exception as exception:
-        # make sentry_monitor re-reraise after notifying sentry
-        raise utils.CriticalError(exception)
-
-    return process_event(
-        event, context, "{{_env.name}}", "{{_layer.name}}", "{{_env.stage}}",
-        input=input,
-        output=output
-    )
+        if {{break_on_error}}:
+            # make sentry_monitor re-reraise after notifying sentry
+            raise utils.CriticalError(exception)
+        else:
+            # sentry monitor and notify SNS but don't re-reraise
+            _notify_sns()

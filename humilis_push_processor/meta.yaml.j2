@@ -32,9 +32,13 @@ meta:
                 - sns
                 - s3
 
-        sns_topic_name:
+        sns_topic_arn:
             description: A SNS topic the lambda can use to send notifications
             value:
+
+        break_on_error:
+            description: Lambda breaks or not when an error occurs on an output
+            value: yes
 
         {% if network %}
             {% if network.vpc_id and network.subnet_id %}

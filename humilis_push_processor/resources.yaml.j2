@@ -182,15 +182,12 @@ resources:
                     - "ec2:DescribeNetworkInterfaces"
                     - "ec2:DeleteNetworkInterface"
                   Resource: "*"
-                  {% if sns_topic_name %}
+                  {% if sns_topic_arn %}
                 - Effect: Allow
                   # Permission to access a given SNS topic
                   Action:
                     - "sns:*"
-                  Resource:
-                    - "Fn::Join":
-                      - ""
-                      - ["arn:aws:sns:", {"Ref": "AWS::Region"},":", {"Ref": "AWS::AccountId"}, ":", "{{sns_topic_name}}"]
+                  Resource: "*"
                   {% endif %}
     {% if meta_input.kinesis_stream %}
     InputEventSourceMapping:
