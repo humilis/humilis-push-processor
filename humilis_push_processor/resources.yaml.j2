@@ -53,6 +53,14 @@ resources:
           "Fn::GetAtt":
               - LambdaExecutionRole
               - Arn
+        {% if variables %}
+        Environment:
+          Variables:
+            {% for k, v in variables.items() %}
+            "{{k}}": "{{v}}"
+            {% endfor %}
+        {% endif %}
+
 {% if meta_network %}
         VpcConfig:
           SubnetIds:
