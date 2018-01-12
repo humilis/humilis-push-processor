@@ -44,7 +44,7 @@ resources:
         Code:
           S3Bucket: "{{lambda_function.s3bucket}}"
           S3Key: "{{lambda_function.s3key}}"
-        Runtime: "python2.7"
+        Runtime: "python3.6"
         Description: "{{_layer.description}}"
         {# in seconds #}
         Timeout: 100
