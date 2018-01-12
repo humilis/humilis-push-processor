@@ -13,6 +13,7 @@ setup(
         "raven",
         "lambdautils>=0.7.1",
         "werkzeug",
+        "contextlib2"
     ],
     classifiers=[
         "Programming Language :: Python :: 2.7"],

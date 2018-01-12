@@ -5,6 +5,8 @@ pytest
 pytest-cov
 tox
 mock
+contextlib2
+pdbpp
 
 # We need humilis for deployment and also for the integration test suite
 -e git+https://github.com/humilis/humilis#egg=humilis
