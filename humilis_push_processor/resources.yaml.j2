@@ -200,6 +200,14 @@ resources:
                       - ""
                       - ["arn:aws:sns:", {"Ref": "AWS::Region"},":", {"Ref": "AWS::AccountId"}, ":", "{{sns_topic_name}}"]
                   {% endif %}
+                - Effect: Allow
+                  # Permission to decrypt using KMS
+                  Action:
+                    - "kms:Decrypt"
+                    - "kms:DescribeKey"
+                  Resource:
+                    - "*"
+
     {% if meta_input.kinesis_stream %}
     InputEventSourceMapping:
       Type: "AWS::Lambda::EventSourceMapping"
