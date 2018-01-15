@@ -44,7 +44,7 @@ resources:
         Code:
           S3Bucket: "{{lambda_function.s3bucket}}"
           S3Key: "{{lambda_function.s3key}}"
-        Runtime: "python2.7"
+        Runtime: "python3.6"
         Description: "{{_layer.description}}"
         {# in seconds #}
         Timeout: 100
@@ -53,6 +53,14 @@ resources:
           "Fn::GetAtt":
               - LambdaExecutionRole
               - Arn
+        {% if variables %}
+        Environment:
+          Variables:
+            {% for k, v in variables.items() %}
+            "{{k}}": "{{v}}"
+            {% endfor %}
+        {% endif %}
+
 {% if meta_network %}
         VpcConfig:
           SubnetIds:
@@ -192,6 +200,14 @@ resources:
                       - ""
                       - ["arn:aws:sns:", {"Ref": "AWS::Region"},":", {"Ref": "AWS::AccountId"}, ":", "{{sns_topic_name}}"]
                   {% endif %}
+                - Effect: Allow
+                  # Permission to decrypt using KMS
+                  Action:
+                    - "kms:Decrypt"
+                    - "kms:DescribeKey"
+                  Resource:
+                    - "*"
+
     {% if meta_input.kinesis_stream %}
     InputEventSourceMapping:
       Type: "AWS::Lambda::EventSourceMapping"

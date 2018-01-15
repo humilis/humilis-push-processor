@@ -145,3 +145,9 @@ meta:
                     parameters:
                         path: lambda_function
                         dependencies: {{lambda_dependencies or []}}
+
+        variables:
+            description:
+                The environment variables that will be injected in all the AWS
+                Lambdas that back the API resources.
+            value: {}
