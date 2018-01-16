@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.10
+------
+
+- Add support for injection of env vars and KMS key decrypt
+
 0.0.8
 -----
 
